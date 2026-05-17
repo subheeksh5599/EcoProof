@@ -24,7 +24,7 @@ npm install
 npm run dev
 ```
 
-3. Open ecoproof.vercel.app
+3. Open https://ecoproof.vercel.app/
 
 
 4. Connect Phantom wallet (Devnet)
