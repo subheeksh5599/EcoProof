@@ -24,7 +24,8 @@ npm install
 npm run dev
 ```
 
-3. Open http://localhost:3000
+3. Open ecoproof.vercel.app
+
 
 4. Connect Phantom wallet (Devnet)
 
@@ -54,12 +55,13 @@ For production, implement:
    - Replace mock validator in `utils/validateImage.ts`
    - Options: Google Vision, AWS Rekognition, Azure Computer Vision
    - Add API key to environment variables
+   -Avoids multiple submission
 
 4. **Security**
    - Enable CSRF protection
    - Add request signing
    - Implement fraud detection
-
+  
 ## Tech Stack
 
 - Next.js 14 + TypeScript
