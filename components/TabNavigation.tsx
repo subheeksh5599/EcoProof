@@ -28,7 +28,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
         height: '72px'
       }}
     >
-      <div className="max-w-7xl mx-auto h-full flex items-center justify-around px-4">
+      <div className="max-w-md mx-auto h-full flex items-center justify-center gap-2 px-4">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -39,7 +39,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
               onClick={() => onTabChange(tab.id)}
               className="flex flex-col items-center justify-center gap-1 transition-all relative group"
               style={{
-                minWidth: '64px',
+                minWidth: '60px',
                 padding: '8px'
               }}
             >

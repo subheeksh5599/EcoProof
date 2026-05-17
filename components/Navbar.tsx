@@ -20,7 +20,7 @@ export default function Navbar() {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <span className="text-2xl">🌿</span>
-          <span className="text-xl font-bold gradient-text">Trash2Token</span>
+          <span className="text-xl font-bold gradient-text">EcoProof</span>
         </div>
 
         {/* Right side */}
