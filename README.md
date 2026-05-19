@@ -37,7 +37,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open https://ecoproof.vercel.app/ in your browser.
 
 ## Environment Variables
 
@@ -54,16 +54,6 @@ MINT_AUTHORITY_SECRET_KEY=[your_secret_key_array]
 # AI Detection
 NEXT_PUBLIC_GOOGLE_VISION_API_KEY=your_gemini_api_key
 ```
-
-## Token Setup
-
-Create your SPL token on Solana:
-
-```bash
-npm run create-token
-```
-
-This will generate a token mint and provide the configuration for your `.env.local` file.
 
 ## Tech Stack
 
