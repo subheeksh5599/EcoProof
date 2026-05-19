@@ -30,9 +30,11 @@ function AppContent() {
   }, [])
 
   const handleConnect = () => {
-    // Trigger wallet modal
-    const button = document.querySelector('.wallet-adapter-button') as HTMLButtonElement
-    if (button) button.click()
+    // Trigger wallet modal by clicking the hidden wallet button
+    const button = document.querySelector('.wallet-adapter-button-trigger') as HTMLButtonElement
+    if (button) {
+      button.click()
+    }
   }
 
   const handleUsernameSet = (newUsername: string) => {
@@ -42,26 +44,79 @@ function AppContent() {
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#050805' }}>
-        <div className="text-center">
-          <div className="text-4xl mb-4">🌿</div>
-          <div style={{ color: '#86efac' }}>Loading...</div>
-        </div>
+        <div className="loader"></div>
       </div>
     )
   }
 
   // Show landing screen if wallet not connected
   if (!publicKey) {
-    return <LandingScreen onConnect={handleConnect} />
+    return (
+      <>
+        {/* Hidden wallet button to trigger connection modal */}
+        <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>
+          <WalletMultiButton className="wallet-adapter-button-trigger" />
+        </div>
+        <LandingScreen onConnect={handleConnect} />
+      </>
+    )
   }
 
-  // Show username setup if no username
-  if (!username) {
-    return <UsernameSetup onUsernameSet={handleUsernameSet} />
-  }
-
-  // Show dashboard
-  return <DashboardScreen />
+  // For authenticated users, show background effects
+  return (
+    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+      {/* Floating Lines Background */}
+      <div style={{ 
+        position: 'fixed', 
+        inset: 0, 
+        zIndex: 0,
+        opacity: 0.2
+      }}>
+        <FloatingLines
+          linesGradient={["#22c55e", "#16a34a", "#22c55e"]}
+          animationSpeed={1.7}
+          interactive={false}
+          bendRadius={8.5}
+          bendStrength={-0.5}
+          mouseDamping={0.11}
+          parallax
+          parallaxStrength={0.2}
+        />
+      </div>
+      
+      {/* Dot Field Overlay */}
+      <div style={{ 
+        position: 'fixed', 
+        inset: 0, 
+        zIndex: 1,
+        opacity: 0.3
+      }}>
+        <DotField
+          dotRadius={1.5}
+          dotSpacing={14}
+          bulgeStrength={67}
+          glowRadius={160}
+          sparkle={false}
+          waveAmplitude={0}
+          cursorRadius={500}
+          cursorForce={0.1}
+          bulgeOnly
+          gradientFrom="#22c55e"
+          gradientTo="#16a34a"
+          glowColor="#050805"
+        />
+      </div>
+      
+      {/* Main Content */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        {!username ? (
+          <UsernameSetup onUsernameSet={handleUsernameSet} />
+        ) : (
+          <DashboardScreen />
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function Home() {
@@ -75,7 +130,7 @@ export default function Home() {
 
   return (
     <ConnectionProvider endpoint={endpoint} config={{ commitment: 'confirmed' }}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} autoConnect={false}>
         <WalletModalProvider>
           <Toaster 
             position="bottom-right"
@@ -100,54 +155,7 @@ export default function Home() {
             }}
           />
           
-          <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
-            {/* Floating Lines Background */}
-            <div style={{ 
-              position: 'fixed', 
-              inset: 0, 
-              zIndex: 0,
-              opacity: 0.2
-            }}>
-              <FloatingLines
-                linesGradient={["#22c55e", "#16a34a", "#22c55e"]}
-                animationSpeed={1.7}
-                interactive={false}
-                bendRadius={8.5}
-                bendStrength={-0.5}
-                mouseDamping={0.11}
-                parallax
-                parallaxStrength={0.2}
-              />
-            </div>
-            
-            {/* Dot Field Overlay */}
-            <div style={{ 
-              position: 'fixed', 
-              inset: 0, 
-              zIndex: 1,
-              opacity: 0.3
-            }}>
-              <DotField
-                dotRadius={1.5}
-                dotSpacing={14}
-                bulgeStrength={67}
-                glowRadius={160}
-                sparkle={false}
-                waveAmplitude={0}
-                cursorRadius={500}
-                cursorForce={0.1}
-                bulgeOnly
-                gradientFrom="#22c55e"
-                gradientTo="#16a34a"
-                glowColor="#050805"
-              />
-            </div>
-            
-            {/* Main Content */}
-            <div style={{ position: 'relative', zIndex: 10 }}>
-              <AppContent />
-            </div>
-          </div>
+          <AppContent />
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

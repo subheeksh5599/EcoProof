@@ -2,6 +2,7 @@
 
 import { ShoppingBag, Gift, Zap, Star } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useEffect, useState } from 'react'
 
 interface MarketplaceTabProps {
   balance: number
@@ -9,78 +10,63 @@ interface MarketplaceTabProps {
 }
 
 export default function MarketplaceTab({ balance, onPurchase }: MarketplaceTabProps) {
+  const [ownedBadges, setOwnedBadges] = useState<string[]>([])
+
+  useEffect(() => {
+    // Load owned badges
+    try {
+      const badges = JSON.parse(localStorage.getItem('user_badges') || '[]')
+      setOwnedBadges(badges.map((b: any) => b.id))
+    } catch (error) {
+      console.error('Error loading badges:', error)
+    }
+  }, [])
+
   const items = [
-    {
-      id: 'tree',
-      name: 'Plant a Tree',
-      description: 'Fund a real tree planting through our partners',
-      cost: 100,
-      icon: '🌳',
-      category: 'impact'
-    },
-    {
-      id: 'ocean',
-      name: 'Ocean Cleanup',
-      description: 'Support ocean plastic removal projects',
-      cost: 150,
-      icon: '🌊',
-      category: 'impact'
-    },
-    {
-      id: 'solar',
-      name: 'Solar Panel Fund',
-      description: 'Contribute to community solar installations',
-      cost: 200,
-      icon: '☀️',
-      category: 'impact'
-    },
     {
       id: 'badge-bronze',
       name: 'Bronze Badge',
-      description: 'Exclusive profile badge',
+      description: 'Exclusive profile badge • 1.5x reward multiplier',
       cost: 50,
       icon: '🥉',
-      category: 'badge'
+      category: 'badge',
+      multiplier: 1.5
     },
     {
       id: 'badge-silver',
       name: 'Silver Badge',
-      description: 'Rare profile badge',
-      cost: 100,
+      description: 'Rare profile badge • 2.0x reward multiplier',
+      cost: 150,
       icon: '🥈',
-      category: 'badge'
+      category: 'badge',
+      multiplier: 2.0
     },
     {
       id: 'badge-gold',
       name: 'Gold Badge',
-      description: 'Legendary profile badge',
-      cost: 250,
+      description: 'Epic profile badge • 2.5x reward multiplier',
+      cost: 300,
       icon: '🥇',
-      category: 'badge'
+      category: 'badge',
+      multiplier: 2.5
     },
     {
-      id: 'boost-2x',
-      name: '2x Boost (24h)',
-      description: 'Double your rewards for 24 hours',
-      cost: 75,
-      icon: '⚡',
-      category: 'boost'
-    },
-    {
-      id: 'boost-3x',
-      name: '3x Boost (24h)',
-      description: 'Triple your rewards for 24 hours',
-      cost: 150,
-      icon: '🔥',
-      category: 'boost'
-    },
-    {
-      id: 'nft-eco',
-      name: 'Eco Warrior NFT',
-      description: 'Limited edition NFT collectible',
+      id: 'badge-platinum',
+      name: 'Platinum Badge',
+      description: 'Legendary profile badge • 3.0x reward multiplier',
       cost: 500,
-      icon: '🎨',
-      category: 'nft'
+      icon: '💎',
+      category: 'badge',
+      multiplier: 3.0
+    },
+    {
+      id: 'badge-diamond',
+      name: 'Diamond Badge',
+      description: 'Mythic profile badge • 3.5x reward multiplier',
+      cost: 1000,
+      icon: '💠',
+      category: 'badge',
+      multiplier: 3.5
     }
   ]
 
@@ -90,15 +76,38 @@ export default function MarketplaceTab({ balance, onPurchase }: MarketplaceTabPr
       return
     }
     
+    // Store badge with multiplier
+    if (item.category === 'badge') {
+      try {
+        const badges = JSON.parse(localStorage.getItem('user_badges') || '[]')
+        
+        // Check if already owned
+        if (badges.some((b: any) => b.id === item.id)) {
+          toast.error('You already own this badge')
+          return
+        }
+        
+        badges.push({
+          id: item.id,
+          name: item.name,
+          icon: item.icon,
+          multiplier: item.multiplier,
+          purchasedAt: Date.now()
+        })
+        
+        localStorage.setItem('user_badges', JSON.stringify(badges))
+        setOwnedBadges([...ownedBadges, item.id]) // Update state
+      } catch (error) {
+        console.error('Error saving badge:', error)
+      }
+    }
+    
     onPurchase(item.name, item.cost)
-    toast.success(`${item.icon} ${item.name} purchased!`)
+    toast.success(`${item.icon} ${item.name} purchased! ${item.multiplier}x multiplier active!`)
   }
 
   const categories = [
-    { id: 'impact', name: 'Real Impact', icon: '🌍' },
-    { id: 'badge', name: 'Badges', icon: '🏅' },
-    { id: 'boost', name: 'Boosts', icon: '⚡' },
-    { id: 'nft', name: 'NFTs', icon: '🎨' }
+    { id: 'badge', name: 'Tier Badges', icon: '🏅' }
   ]
 
   return (
@@ -146,15 +155,17 @@ export default function MarketplaceTab({ balance, onPurchase }: MarketplaceTabPr
       {/* Items Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((item) => {
-          const canAfford = balance >= item.cost
+          const isOwned = ownedBadges.includes(item.id)
+          const canAfford = balance >= item.cost && !isOwned
           
           return (
             <div
               key={item.id}
               className="card p-6 transition-all hover:border-[#22c55e]"
               style={{
-                opacity: canAfford ? 1 : 0.6,
-                cursor: canAfford ? 'pointer' : 'not-allowed'
+                opacity: isOwned ? 0.7 : canAfford ? 1 : 0.6,
+                cursor: canAfford ? 'pointer' : 'not-allowed',
+                border: isOwned ? '2px solid #22c55e' : undefined
               }}
             >
               {/* Icon */}
@@ -183,10 +194,11 @@ export default function MarketplaceTab({ balance, onPurchase }: MarketplaceTabPr
                     padding: '6px 16px',
                     fontSize: '14px',
                     opacity: canAfford ? 1 : 0.5,
-                    cursor: canAfford ? 'pointer' : 'not-allowed'
+                    cursor: canAfford ? 'pointer' : 'not-allowed',
+                    background: isOwned ? '#16a34a' : undefined
                   }}
                 >
-                  {canAfford ? 'Buy' : 'Locked'}
+                  {isOwned ? '✓ Owned' : canAfford ? 'Buy' : 'Locked'}
                 </button>
               </div>
 
@@ -202,7 +214,7 @@ export default function MarketplaceTab({ balance, onPurchase }: MarketplaceTabPr
                     padding: '2px 8px'
                   }}
                 >
-                  {categories.find(c => c.id === item.category)?.name}
+                  {item.multiplier}x Multiplier
                 </span>
               </div>
             </div>
@@ -222,10 +234,10 @@ export default function MarketplaceTab({ balance, onPurchase }: MarketplaceTabPr
           <Gift className="w-5 h-5 flex-shrink-0" style={{ color: '#22c55e' }} />
           <div>
             <div style={{ color: '#f0fdf4', fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>
-              New items added weekly
+              Tier Multipliers Active
             </div>
             <div style={{ color: '#86efac', fontSize: '13px' }}>
-              Keep recycling to unlock exclusive rewards and make real-world impact
+              Higher tier badges multiply your rewards! Each tier adds 0.5x to your base reward.
             </div>
           </div>
         </div>

@@ -9,8 +9,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Trash2Token - Recycle & Earn',
-  description: 'Submit recycling proof, AI validates, earn $TRASH tokens on Solana',
+  title: 'EcoProof - Transform Waste into Wealth',
+  description: 'Submit recycling proof, AI validates, earn $ECO tokens on Solana. Turn environmental action into tangible rewards.',
 }
 
 export default function RootLayout({

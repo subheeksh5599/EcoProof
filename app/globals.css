@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,12 +9,12 @@
   --primary-green: #22c55e;
   --primary-dark: #16a34a;
   --lime-accent: #84cc16;
-  --background: #050805;
+  --background: #FFFFFF;
   --surface-1: #0f1a0f;
   --surface-2: #162416;
   --border: #1f2e1f;
-  --text-primary: #f0fdf4;
-  --text-secondary: #86efac;
+  --text-primary: #000000;
+  --text-secondary: #6F6F6F;
   --text-muted: rgba(74, 222, 128, 0.5);
   --error: #ef4444;
   --warning: #f59e0b;
@@ -52,6 +54,15 @@ body {
   background: var(--background);
   color: var(--text-primary);
   overflow-x: hidden;
+}
+
+/* Font families */
+.font-display {
+  font-family: 'Instrument Serif', serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
 }
 
 /* Animations */
@@ -110,6 +121,65 @@ body {
   }
 }
 
+/* Custom Loader Animation */
+.loader {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border-top: 8px solid #fff;
+  border-left: 8px solid #fff;
+  border-right: 8px solid transparent;
+  animation: loader 0.7s infinite linear;
+}
+
+@keyframes loader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-rise-delay {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  20% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-rise-delay-2 {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  40% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-float-up {
   animation: float-up 15s linear infinite;
 }
@@ -128,6 +198,18 @@ body {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.8s ease-out;
+}
+
+.animate-fade-rise-delay {
+  animation: fade-rise-delay 1s ease-out;
+}
+
+.animate-fade-rise-delay-2 {
+  animation: fade-rise-delay-2 1.2s ease-out;
 }
 
 /* Gradient text */

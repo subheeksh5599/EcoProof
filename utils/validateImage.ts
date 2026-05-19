@@ -1,3 +1,5 @@
+import { validateWithGoogleVision, VisionResult } from './googleVision'
+
 export interface ValidationResult {
   isRecyclable: boolean
   itemType: string
@@ -6,9 +8,8 @@ export interface ValidationResult {
 }
 
 /**
- * DEMO MODE: Simulated image validator for development
- * In production, replace with real AI service (Google Vision, AWS Rekognition, etc.)
- * Currently validates based on filename keywords and accepts all images as plastic items
+ * Image validation using Gemini Vision API
+ * Detects plastic materials with high accuracy
  */
 export async function validateRecyclableImage(imageFile: File): Promise<ValidationResult> {
   // Validate file type
@@ -22,70 +23,27 @@ export async function validateRecyclableImage(imageFile: File): Promise<Validati
     throw new Error('Image size must be less than 10MB')
   }
 
-  // Simulate API processing delay
-  await new Promise(resolve => setTimeout(resolve, 1500))
-
-  // Mock validation based on filename (for demo purposes)
-  const filename = imageFile.name.toLowerCase()
+  console.log('🔍 Validating image...')
+  console.log('📸 Image:', imageFile.name, `(${(imageFile.size / 1024).toFixed(1)} KB)`)
   
-  const plasticItems = [
-    { keywords: ['bottle', 'plastic', 'pet'], type: 'Plastic Bottle', confidence: 0.92 },
-    { keywords: ['bag', 'plastic'], type: 'Plastic Bag', confidence: 0.88 },
-    { keywords: ['container', 'plastic', 'tub'], type: 'Plastic Container', confidence: 0.85 },
-    { keywords: ['cup', 'plastic'], type: 'Plastic Cup', confidence: 0.90 },
-    { keywords: ['wrapper', 'packaging'], type: 'Plastic Packaging', confidence: 0.87 },
-  ]
-
-  // Check filename for plastic keywords
-  for (const item of plasticItems) {
-    if (item.keywords.some(keyword => filename.includes(keyword))) {
-      return {
-        isRecyclable: true,
-        itemType: item.type,
-        reason: `Detected ${item.type}`,
-        confidence: item.confidence
-      }
-    }
-  }
-
-  // If no keywords match, assume it's a generic plastic item
-  // In production, this would be replaced with real AI vision API
-  return {
-    isRecyclable: true,
-    itemType: 'Plastic Item',
-    reason: 'Detected Plastic Item',
-    confidence: 0.85
-  }
-}
-
-/**
- * PRODUCTION: Uncomment and configure for real AI validation
- */
-/*
-export async function validateRecyclableImageProduction(imageFile: File): Promise<ValidationResult> {
-  const apiKey = process.env.NEXT_PUBLIC_VISION_API_KEY
-
-  if (!apiKey) {
-    throw new Error('Vision API key not configured')
-  }
-
-  const base64Image = await fileToBase64(imageFile)
-
-  const response = await fetch('/api/validate-image', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: base64Image })
+  const result = await validateWithGoogleVision(imageFile)
+  
+  console.log('✅ Validation complete:', {
+    isRecyclable: result.isRecyclable,
+    itemType: result.itemType,
+    confidence: `${(result.confidence * 100).toFixed(0)}%`,
+    reason: result.reason
   })
-
-  if (!response.ok) {
-    throw new Error('Validation failed')
+  
+  return {
+    isRecyclable: result.isRecyclable,
+    itemType: result.itemType,
+    reason: result.reason,
+    confidence: result.confidence
   }
-
-  return await response.json()
 }
-*/
 
-// Utility function for production use
+// File conversion utility
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

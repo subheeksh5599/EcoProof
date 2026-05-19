@@ -14,6 +14,8 @@ import { validateRecyclableImage } from '@/utils/validateImage'
 import { mintTokens } from '@/utils/mintToken'
 import { checkCooldown, updateLastSubmission } from '@/utils/cooldown'
 import { getImageHash, markImageAsSubmitted, isImageAlreadySubmitted } from '@/utils/imageHash'
+import { calculateReward, getHighestMultiplier } from '@/utils/badgeSystem'
+import { updateChallengeProgress } from '@/utils/weeklyChallenge'
 
 type SubmissionState = 'empty' | 'uploaded' | 'analyzing' | 'validated' | 'rejected' | 'minting' | 'success'
 type Tab = 'home' | 'submit' | 'leaderboard' | 'marketplace' | 'profile'
@@ -71,6 +73,13 @@ export default function DashboardScreen() {
     checkCooldownStatus()
   }, [publicKey])
 
+  // Reload stats when username changes
+  useEffect(() => {
+    if (username) {
+      loadUserStats()
+    }
+  }, [username])
+
   // Auto-refresh transactions
   useEffect(() => {
     const interval = setInterval(() => {
@@ -101,13 +110,22 @@ export default function DashboardScreen() {
 
   const loadUserStats = () => {
     try {
+      const currentUsername = username || localStorage.getItem('user_username') || 'Anonymous'
       const records = JSON.parse(localStorage.getItem('recycling_records') || '[]')
-      const userRecords = records.filter((r: any) => r.username === username)
+      
+      console.log('📊 Loading stats for:', currentUsername)
+      console.log('📦 Total records:', records.length)
+      
+      const userRecords = records.filter((r: any) => r.username === currentUsername)
+      console.log('👤 User records:', userRecords.length, userRecords)
+      
       const balance = userRecords.reduce((sum: number, r: any) => sum + (r.amount || 0), 0)
       const co2Saved = balance * 0.023 // Rough estimate: ~23g CO2 per token
       
       // Calculate actual streak
       const streak = calculateStreak(userRecords)
+      
+      console.log('💰 Balance:', balance, '$ECO')
       
       setStats({
         balance,
@@ -224,7 +242,9 @@ export default function DashboardScreen() {
       
       if (result.isRecyclable) {
         setValidationResult(result)
-        setRewardAmount(10) // Base reward
+        const baseReward = 10
+        const finalReward = calculateReward(baseReward) // Apply badge multiplier
+        setRewardAmount(finalReward)
         setSubmissionState('validated')
         
         // Store hash
@@ -247,12 +267,16 @@ export default function DashboardScreen() {
     setSubmissionState('minting')
     
     try {
-      const result = await mintTokens(publicKey.toBase58(), rewardAmount)
+      const itemType = validationResult?.itemType || 'Plastic Item'
+      const result = await mintTokens(publicKey.toBase58(), rewardAmount, itemType)
       
       if (result.success) {
         // Set cooldown
         updateLastSubmission()
         checkCooldownStatus()
+        
+        // Update challenge progress
+        updateChallengeProgress()
         
         // Update UI
         setSubmissionState('success')
@@ -320,10 +344,7 @@ export default function DashboardScreen() {
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#050805' }}>
-        <div className="text-center">
-          <div className="text-4xl mb-4">🌿</div>
-          <div style={{ color: '#86efac' }}>Loading...</div>
-        </div>
+        <div className="loader"></div>
       </div>
     )
   }
@@ -331,7 +352,7 @@ export default function DashboardScreen() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeTab stats={stats} transactions={transactions} username={username} />
+        return <HomeTab stats={stats} transactions={transactions} username={username} onStatsUpdate={loadUserStats} />
       
       case 'submit':
         return (
@@ -367,7 +388,7 @@ export default function DashboardScreen() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen" style={{ background: '#050805', paddingTop: '80px', paddingBottom: '96px' }}>
+      <div className="min-h-screen" style={{ background: '#050805', paddingTop: '80px', paddingBottom: '100px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {renderTabContent()}
         </div>

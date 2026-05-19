@@ -6,7 +6,15 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      scale: {
+        '103': '1.03',
+      },
+      fontFamily: {
+        'display': ['Instrument Serif', 'serif'],
+        'body': ['Inter', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }

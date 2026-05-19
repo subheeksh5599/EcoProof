@@ -1,6 +1,9 @@
 'use client'
 
 import { Coins, Flame, Globe, TrendingUp, Award } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { getCurrentChallenge, getChallengeProgress, claimChallengeReward, getTimeRemaining } from '@/utils/weeklyChallenge'
+import toast from 'react-hot-toast'
 
 interface HomeTabProps {
   stats: {
@@ -17,9 +20,41 @@ interface HomeTabProps {
     txHash?: string
   }>
   username: string
+  onStatsUpdate?: () => void
 }
 
-export default function HomeTab({ stats, transactions, username }: HomeTabProps) {
+export default function HomeTab({ stats, transactions, username, onStatsUpdate }: HomeTabProps) {
+  const [challenge, setChallenge] = useState(getCurrentChallenge())
+  const [progress, setProgress] = useState(getChallengeProgress())
+  const [timeRemaining, setTimeRemaining] = useState(getTimeRemaining())
+
+  useEffect(() => {
+    // Update every minute
+    const interval = setInterval(() => {
+      setChallenge(getCurrentChallenge())
+      setProgress(getChallengeProgress())
+      setTimeRemaining(getTimeRemaining())
+    }, 60000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleClaimReward = () => {
+    const result = claimChallengeReward()
+    
+    if (result.success) {
+      toast.success(`🎉 Claimed ${result.reward} $ECO reward!`)
+      setProgress(getChallengeProgress())
+      if (onStatsUpdate) onStatsUpdate()
+    } else if (progress.claimedReward) {
+      toast.error('Reward already claimed')
+    } else {
+      toast.error('Challenge not completed yet')
+    }
+  }
+
+  const progressPercentage = Math.min((progress.progress / challenge.target) * 100, 100)
+
   const formatTimeAgo = (timestamp: number) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000)
     if (seconds < 60) return 'Just now'
@@ -84,30 +119,47 @@ export default function HomeTab({ stats, transactions, username }: HomeTabProps)
               <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '600' }}>
                 Weekly Challenge
               </span>
+              <span style={{ color: '#86efac', fontSize: '12px' }}>
+                • {timeRemaining}
+              </span>
             </div>
             <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#f0fdf4', marginBottom: '8px' }}>
-              Recycle 50 Items This Week
+              {challenge.title}
             </h3>
             <p style={{ color: '#86efac', fontSize: '14px', marginBottom: '12px' }}>
-              Complete to earn 500 bonus $ECO + exclusive badge
+              {challenge.description}
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-3">
               <div className="flex-1 h-2 rounded-full" style={{ background: '#0f1a0f' }}>
                 <div 
                   className="h-full rounded-full transition-all duration-500"
                   style={{ 
-                    width: '34%', 
+                    width: `${progressPercentage}%`, 
                     background: 'linear-gradient(90deg, #22c55e, #16a34a)',
                     boxShadow: '0 0 10px rgba(34, 197, 94, 0.5)'
                   }}
                 />
               </div>
               <span style={{ color: '#22c55e', fontSize: '14px', fontWeight: '600' }}>
-                17/50
+                {progress.progress}/{challenge.target}
               </span>
             </div>
+            {progress.completed && !progress.claimedReward && (
+              <button
+                onClick={handleClaimReward}
+                className="btn-primary animate-pulse-glow"
+                style={{ padding: '8px 20px', fontSize: '14px' }}
+              >
+                🎁 Claim {challenge.reward} $ECO
+              </button>
+            )}
+            {progress.claimedReward && (
+              <div style={{ color: '#22c55e', fontSize: '14px', fontWeight: '600' }}>
+                ✓ Reward Claimed!
+              </div>
+            )}
           </div>
-          <div className="text-5xl ml-4">🏆</div>
+          <div className="text-5xl ml-4">{challenge.icon}</div>
         </div>
       </div>
 

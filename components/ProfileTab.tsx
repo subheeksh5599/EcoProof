@@ -1,6 +1,8 @@
 'use client'
 
 import { Award, Calendar, TrendingUp, Package } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { getUserBadges, getHighestMultiplier } from '@/utils/badgeSystem'
 
 interface ProfileTabProps {
   username: string
@@ -20,6 +22,15 @@ interface ProfileTabProps {
 }
 
 export default function ProfileTab({ username, stats, transactions }: ProfileTabProps) {
+  const [ownedBadges, setOwnedBadges] = useState<any[]>([])
+  const [activeMultiplier, setActiveMultiplier] = useState(1.0)
+
+  useEffect(() => {
+    const badges = getUserBadges()
+    setOwnedBadges(badges)
+    setActiveMultiplier(getHighestMultiplier())
+  }, [])
+
   // Calculate category breakdown
   const categoryBreakdown = transactions.reduce((acc, tx) => {
     const category = tx.item.toLowerCase().includes('plastic') ? 'Plastic' :
@@ -95,17 +106,56 @@ export default function ProfileTab({ username, stats, transactions }: ProfileTab
                 </div>
                 <div style={{ color: '#86efac', fontSize: '12px' }}>Submissions</div>
               </div>
+              <div>
+                <div className="tabular-nums" style={{ fontSize: '20px', fontWeight: '700', color: '#22c55e' }}>
+                  {activeMultiplier}x
+                </div>
+                <div style={{ color: '#86efac', fontSize: '12px' }}>Multiplier</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Badges */}
+      {/* Owned Badges */}
+      {ownedBadges.length > 0 && (
+        <div className="card p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Award className="w-5 h-5" style={{ color: '#22c55e' }} />
+            <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#f0fdf4' }}>
+              Owned Badges
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {ownedBadges.map((badge) => (
+              <div
+                key={badge.id}
+                className="p-4 rounded-lg text-center"
+                style={{
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  border: '2px solid rgba(34, 197, 94, 0.3)'
+                }}
+              >
+                <div className="text-3xl mb-2">{badge.icon}</div>
+                <div style={{ color: '#f0fdf4', fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>
+                  {badge.name}
+                </div>
+                <div style={{ color: '#22c55e', fontSize: '12px', fontWeight: '600' }}>
+                  {badge.multiplier}x Multiplier
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Achievement Badges */}
       <div className="card p-6">
         <div className="flex items-center gap-3 mb-4">
           <Award className="w-5 h-5" style={{ color: '#22c55e' }} />
           <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#f0fdf4' }}>
-            Badges
+            Achievement Badges
           </h2>
         </div>
 
