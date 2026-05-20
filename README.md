@@ -9,7 +9,6 @@ A blockchain-powered platform that rewards users for recycling plastic waste. Su
 - 🏅 **Tier System** - Purchase badges to multiply your rewards (1.5x - 3.5x)
 - 👛 **Wallet Integration** - Seamless Phantom wallet connection
 - 📊 **Analytics Dashboard** - Track your impact, streak, and CO₂ savings
-- 🎨 **Cinematic UI** - Modern design with video backgrounds and smooth animations
 
 ## Quick Start
 
