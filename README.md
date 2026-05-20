@@ -1,4 +1,4 @@
-# 🌿 EcoProof
+# EcoProof
 
 A blockchain-powered platform that rewards users for recycling plastic waste. Submit proof of recycling, get AI validation, and earn $ECO tokens on Solana.
 
@@ -36,8 +36,6 @@ cp .env.example .env.local
 # Run development server
 npm run dev
 ```
-
-Open https://ecoproof.vercel.app/ in your browser.
 
 ## Environment Variables
 
